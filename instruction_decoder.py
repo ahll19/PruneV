@@ -12,11 +12,11 @@ class InstructionDecoder:
     @classmethod
     def override_read_results(
         cls, instruction: str, memory_content: str
-    ) -> Tuple[List[Register] | None, List[Register] | None]:
+    ) -> Tuple[List[Register], List[Register]]:
         instr, kwargs = InstructionFormatter.format(instruction, memory_content)
 
         if instr is None or kwargs is None:
-            return None, None
+            return [], []
 
         overrides = instr.overrides(**kwargs)
         reads = instr.reads(**kwargs)
@@ -25,15 +25,13 @@ class InstructionDecoder:
 
     @classmethod
     def injection_coverage(cls, instructions: pd.DataFrame):
-        _ = ""
-
         N = len(instructions)
-        register_map = {Register(i): i for i in range(32)}
-        coverage = np.zeros((32, N))
-        worth_injecting = np.ones(32)
+        M = 32
+        non_inject = np.zeros((N, M))
 
-        print("Calculating injection coverage... ")
-
+        unique_tracker = np.zeros(M)
+        override_tracker = np.zeros(M).astype(bool)
+        # Muffin Logic
         for _i in tqdm(range(N)):
             i = N - _i - 1
             row = instructions.iloc[i]
@@ -42,24 +40,16 @@ class InstructionDecoder:
             mem_cont = row["Register and memory contents"]
             overrides, reads = cls.override_read_results(instr, mem_cont)
 
-            if overrides is not None:
-                over_idx = [register_map[r] for r in overrides]
-            else:
-                over_idx = []
+            for read in reads:
+                unique_tracker[read.id] += 1
+                override_tracker[read.id] = False
 
-            if reads is not None:
-                read_idx = [register_map[r] for r in reads]
-            else:
-                read_idx = []
+            for override in overrides:
+                override_tracker[override.id] = True
 
-            for idx in over_idx:
-                worth_injecting[idx] = 0
+            non_inject[i] = unique_tracker
+            non_inject[i][override_tracker] = 0
 
-            for idx in read_idx:
-                worth_injecting[idx] = 1
+        non_inject = pd.DataFrame(non_inject, index=instructions["Cycle"])
 
-            coverage[:, i] = worth_injecting
-
-        tmp = np.sum(coverage) * 100 / (N * 32)
-        print(f"Reduced space to {tmp:.2f}% of original")
-        print(f"Cut away {100 - tmp:.2f}% of original")
+        _ = ""

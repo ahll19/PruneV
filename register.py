@@ -1,8 +1,13 @@
+from typing import List
+
+
 class Register:
     _id: int = None
     _value: int = None
 
-    def __init__(self, id: int, value: int = 0):
+    def __init__(
+        self, id: int, value: int = 0, unique_cycle_intervals: List[int] = None
+    ):
         self.id = id
         self.value = value
 

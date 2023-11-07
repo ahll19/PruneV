@@ -7,12 +7,12 @@ from register import Register
 class Instruction(ABC):
     @staticmethod
     @abstractmethod
-    def overrides() -> List[Register] | None:
+    def overrides() -> List[Register]:
         pass
 
     @staticmethod
     @abstractmethod
-    def reads() -> List[Register] | None:
+    def reads() -> List[Register]:
         pass
 
     @staticmethod
@@ -26,11 +26,11 @@ class InstructionUJ(Instruction):
 
     @staticmethod
     @abstractmethod
-    def overrides(rd: Register, imm: int) -> List[Register] | None:
+    def overrides(rd: Register, imm: int) -> List[Register]:
         pass
 
     @staticmethod
-    def reads(rd: Register, imm: int) -> List[Register] | None:
+    def reads(rd: Register, imm: int) -> List[Register]:
         pass
 
 
@@ -39,11 +39,11 @@ class InstructionI(Instruction):
 
     @staticmethod
     @abstractmethod
-    def overrides(rd: Register, rs1: Register, imm: int) -> List[Register] | None:
+    def overrides(rd: Register, rs1: Register, imm: int) -> List[Register]:
         pass
 
     @staticmethod
-    def reads(rd: Register, rs1: Register, imm: int) -> List[Register] | None:
+    def reads(rd: Register, rs1: Register, imm: int) -> List[Register]:
         pass
 
 
@@ -52,11 +52,11 @@ class InstructionB(Instruction):
 
     @staticmethod
     @abstractmethod
-    def overrides(rs1: Register, rs2: Register, imm: int) -> List[Register] | None:
+    def overrides(rs1: Register, rs2: Register, imm: int) -> List[Register]:
         pass
 
     @staticmethod
-    def reads(rs1: Register, rs2: Register, imm: int) -> List[Register] | None:
+    def reads(rs1: Register, rs2: Register, imm: int) -> List[Register]:
         pass
 
 
@@ -65,11 +65,11 @@ class InstructionS(Instruction):
 
     @staticmethod
     @abstractmethod
-    def overrides(rs1: Register, rs2: Register, imm: int) -> List[Register] | None:
+    def overrides(rs1: Register, rs2: Register, imm: int) -> List[Register]:
         pass
 
     @staticmethod
-    def reads(rs1: Register, rs2: Register, imm: int) -> List[Register] | None:
+    def reads(rs1: Register, rs2: Register, imm: int) -> List[Register]:
         pass
 
 
@@ -78,9 +78,9 @@ class InstructionR(Instruction):
 
     @staticmethod
     @abstractmethod
-    def overrides(rd: Register, rs1: Register, rs2: Register) -> List[Register] | None:
+    def overrides(rd: Register, rs1: Register, rs2: Register) -> List[Register]:
         pass
 
     @staticmethod
-    def reads(rd: Register, rs1: Register, rs2: Register) -> List[Register] | None:
+    def reads(rd: Register, rs1: Register, rs2: Register) -> List[Register]:
         pass

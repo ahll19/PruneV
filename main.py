@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 from instruction_decoder import InstructionDecoder
 
@@ -26,5 +28,6 @@ def prep() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    mpl.use("TkAgg")
     df = prep()
     InstructionDecoder.injection_coverage(df)
