@@ -39,9 +39,4 @@ if __name__ == "__main__":
 
     sensitive.to_csv("sensitive.csv")
     non_sensitive.to_csv("non_sensitive.csv")
-
-    print(f"Number of sensitive injections: {len(sensitive)}")
-    print(f"Number of non-sensitive injections: {len(non_sensitive)}")
-    print(
-        f"{len(sensitive) * 100 / (len(sensitive) + len(non_sensitive)):.2f}% are sensitive"
-    )
+    tmp.to_csv("encoded_intervals.csv")

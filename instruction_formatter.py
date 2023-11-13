@@ -9,17 +9,19 @@ class InstructionFormatter:
     @classmethod
     def format(
         cls, instruction: str, memory_content: str
-    ) -> Tuple[Instruction, Dict[str, Register | int]] | None:
-        instruction = InstructionFactory.get_instruction(instruction)
-        if instruction is None:
-            return None, None
+    ) -> Tuple[Instruction, Dict[str, Register | int]]:
+        _instruction = InstructionFactory.get_instruction(instruction)
 
-        instruction_format = instruction.format
+        instruction_format = _instruction.format
+
+        if instruction_format == "Undefined":
+            _ = ""
+
         kwargs_for_instruction = cls._get_kwargs_for_instruction(
             instruction_format, memory_content
         )
 
-        return instruction, kwargs_for_instruction
+        return _instruction, kwargs_for_instruction
 
     @classmethod
     def _get_kwargs_for_instruction(
@@ -91,7 +93,15 @@ class InstructionFormatter:
                     "rs1": rs1,
                     "rs2": rs2,
                 }
+            case "Undefined":
+                _r = memory_content.split(" ")[0]
+                regs = [
+                    Register(int(r[1:])) for r in _r.split(",") if r.startswith("x")
+                ]
+                kwargs = {
+                    "regs": regs,
+                }
             case _:
-                raise ValueError(f"Instruction format {instruction_format} not found")
+                _ = ""
 
         return kwargs

@@ -17,6 +17,18 @@ different instructions might be a good idea of this proof of concept works.
 """
 
 
+class UndefinedInstruction:
+    format = "Undefined"
+
+    @staticmethod
+    def overrides(regs: List[Register]) -> List[Register]:
+        return []
+
+    @staticmethod
+    def reads(regs: List[Register]) -> List[Register]:
+        return regs
+
+
 class LUI(InstructionUJ):
     @staticmethod
     def overrides(rd: Register, imm: int) -> List[Register]:

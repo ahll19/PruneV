@@ -37,6 +37,7 @@ from instructions import (
     SRA,
     OR,
     AND,
+    UndefinedInstruction,
 )
 
 
@@ -82,11 +83,11 @@ class InstructionFactory:
     }
 
     @classmethod
-    def get_instruction(cls, instr: str) -> Instruction | None:
+    def get_instruction(cls, instr: str) -> Instruction:
         try:
             return cls.instruction_map[instr.upper()]
         except:
-            return None
+            return UndefinedInstruction
 
     @classmethod
     def get_instruction_format(cls, instr: str) -> str:

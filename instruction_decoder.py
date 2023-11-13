@@ -16,7 +16,7 @@ class InstructionDecoder:
         instr, kwargs = InstructionFormatter.format(instruction, memory_content)
 
         if instr is None or kwargs is None:
-            return [], []
+            raise Exception("Instruction or kwargs is None")
 
         overrides = instr.overrides(**kwargs)
         reads = instr.reads(**kwargs)
