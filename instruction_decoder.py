@@ -24,7 +24,7 @@ class InstructionDecoder:
         return overrides, reads
 
     @classmethod
-    def injection_coverage(cls, instructions: pd.DataFrame):
+    def encode_injection_intervals(cls, instructions: pd.DataFrame):
         N = len(instructions)
         M = 32
         non_inject = np.zeros((N, M))
@@ -32,7 +32,7 @@ class InstructionDecoder:
         unique_tracker = np.zeros(M)
         override_tracker = np.zeros(M).astype(bool)
         # Muffin Logic
-        for _i in tqdm(range(N)):
+        for _i in tqdm(range(N), colour="green", desc="Instruction", leave=False):
             i = N - _i - 1
             row = instructions.iloc[i]
 
@@ -52,4 +52,38 @@ class InstructionDecoder:
 
         non_inject = pd.DataFrame(non_inject, index=instructions["Cycle"])
 
-        _ = ""
+        return non_inject
+
+    @classmethod
+    def get_injection_times(
+        cls, encoded_intervals: pd.DataFrame
+    ) -> Tuple[pd.Series, pd.Series]:
+        sensitive = dict()
+        non_sensitive = dict()
+
+        last_val = -420 * np.ones(32)
+        for reg in tqdm(
+            encoded_intervals.columns,
+            position=0,
+            desc="Register",
+            colour="green",
+            leave=False,
+        ):
+            for cycle in tqdm(
+                encoded_intervals.index,
+                position=1,
+                desc="Cycle",
+                colour="green",
+                leave=False,
+            ):
+                if encoded_intervals[reg][cycle] == last_val[reg]:
+                    continue
+
+                if encoded_intervals[reg][cycle] == 0:
+                    non_sensitive[cycle] = reg
+                else:
+                    sensitive[cycle] = reg
+
+                last_val[reg] = encoded_intervals[reg][cycle]
+
+        return pd.Series(sensitive), pd.Series(non_sensitive)

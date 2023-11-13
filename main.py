@@ -30,4 +30,18 @@ def prep() -> pd.DataFrame:
 if __name__ == "__main__":
     mpl.use("TkAgg")
     df = prep()
-    InstructionDecoder.injection_coverage(df)
+    print("Encoding golden core trace")
+    tmp = InstructionDecoder.encode_injection_intervals(df)
+    print("Done encoding golden core trace")
+    print("Parsing unique injection times")
+    sensitive, non_sensitive = InstructionDecoder.get_injection_times(tmp)
+    print("Done parsing unique injection times")
+
+    sensitive.to_csv("sensitive.csv")
+    non_sensitive.to_csv("non_sensitive.csv")
+
+    print(f"Number of sensitive injections: {len(sensitive)}")
+    print(f"Number of non-sensitive injections: {len(non_sensitive)}")
+    print(
+        f"{len(sensitive) * 100 / (len(sensitive) + len(non_sensitive)):.2f}% are sensitive"
+    )
