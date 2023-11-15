@@ -24,7 +24,7 @@ class InstructionDecoder:
         return overrides, reads
 
     @classmethod
-    def encode_injection_intervals(cls, instructions: pd.DataFrame):
+    def encode_injection_intervals(cls, instructions: pd.DataFrame) -> pd.DataFrame:
         N = len(instructions)
         M = 32
         non_inject = np.zeros((N, M))
@@ -32,13 +32,15 @@ class InstructionDecoder:
         unique_tracker = np.zeros(M)
         override_tracker = np.zeros(M).astype(bool)
         # Muffin Logic
-        for _i in tqdm(range(N), colour="green", desc="Instruction", leave=False):
+        for _i in tqdm(range(N), colour="green", desc="Instruction", leave=True):
             i = N - _i - 1
             row = instructions.iloc[i]
 
             instr = row["Decoded instruction"]
             mem_cont = row["Register and memory contents"]
             overrides, reads = cls.override_read_results(instr, mem_cont)
+
+            non_inject[i][override_tracker] = 0
 
             for read in reads:
                 unique_tracker[read.id] += 1
@@ -48,8 +50,10 @@ class InstructionDecoder:
                 override_tracker[override.id] = True
 
             non_inject[i] = unique_tracker
-            non_inject[i][override_tracker] = 0
 
+        non_inject[:, 0] = np.arange(1, N + 1)
+        non_inject[:, 3] = np.arange(1, N + 1)
+        non_inject[:, 4] = np.arange(1, N + 1)
         non_inject = pd.DataFrame(non_inject, index=instructions["Cycle"])
 
         return non_inject

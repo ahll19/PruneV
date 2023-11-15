@@ -33,7 +33,7 @@ class LUI(InstructionUJ):
     @staticmethod
     def overrides(rd: Register, imm: int) -> List[Register]:
         # TODO: perhaps U and J instructions do override with large imm
-        return []
+        return [rd]
 
     @staticmethod
     def reads(rd: Register, imm: int) -> List[Register]:
@@ -43,7 +43,7 @@ class LUI(InstructionUJ):
 class AUIPC(InstructionUJ):
     @staticmethod
     def overrides(rd: Register, imm: int) -> List[Register]:
-        return []
+        return [rd]
 
     @staticmethod
     def reads(rd: Register, imm: int) -> List[Register]:

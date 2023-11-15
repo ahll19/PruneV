@@ -24,7 +24,10 @@ def prep() -> pd.DataFrame:
 
         lines[i] = new_line
 
-    return pd.DataFrame(lines, columns=header)
+    df = pd.DataFrame(lines, columns=header)
+    df["Cycle"] = df["Cycle"].astype(int)
+
+    return df
 
 
 if __name__ == "__main__":
@@ -40,3 +43,10 @@ if __name__ == "__main__":
     sensitive.to_csv("sensitive.csv")
     non_sensitive.to_csv("non_sensitive.csv")
     tmp.to_csv("encoded_intervals.csv")
+
+    _ = ""
+    # c_interval = (450000, 481430)
+    # sensitive = tmp[(tmp.index < c_interval[1]) & (tmp.index > c_interval[0])][4]
+    # instructions = df[(df["Cycle"] < c_interval[1]) & (df["Cycle"] > c_interval[0])][
+    #     ["Cycle", "Decoded instruction", "Register and memory contents"]
+    # ]
