@@ -1,52 +1,43 @@
-import pandas as pd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+from src.core_trace_parser import CoreTraceParser
+from src.instructions.instruction_factory import InstructionLibrary
+from src.register import Register
+from src.line_and_decoders.line import Line
 
-from instruction_decoder import InstructionDecoder
+from typing import List, Tuple
 
 
-def prep() -> pd.DataFrame:
-    path = "golden_trace.log"
+def custom_line_parser(line: str) -> Tuple[List[Register], List[Register], Line]:
+    tab_split = line.split("\t")
+    comma_split = tab_split[5].split(",")
+    all_regs = [Register(int(reg[1:])) for reg in comma_split if reg.startswith("x")]
 
-    with open(path, "r") as f:
-        lines = f.readlines()
+    cycle = int(line.split("\t")[1])
+    instruction = line.split("\t")[4]
+    instruction_kwargs = dict()
+    _line = Line(cycle, instruction, instruction_kwargs)
 
-    # header and footer have length 6
-    header = [x.strip() for x in lines.pop(0).split("\t")]
-    footer = [x.strip() for x in lines.pop(-1).split("\t")]
-
-    # When we split by len \t we get 7 elements. We concatenate the last two
-    for i, line in enumerate(lines):
-        new_line = line.split("\t")
-        new_line = [x.strip() for x in new_line]
-        last_element = new_line.pop(-1).strip()
-        new_line[-1] += " " + last_element
-
-        lines[i] = new_line
-
-    df = pd.DataFrame(lines, columns=header)
-    df["Cycle"] = df["Cycle"].astype(int)
-
-    return df
+    return all_regs, [], _line
 
 
 if __name__ == "__main__":
-    mpl.use("TkAgg")
-    df = prep()
-    print("Encoding golden core trace")
-    tmp = InstructionDecoder.encode_injection_intervals(df)
-    print("Done encoding golden core trace")
-    print("Parsing unique injection times")
-    sensitive, non_sensitive = InstructionDecoder.get_injection_times(tmp)
-    print("Done parsing unique injection times")
+    ins_lib = InstructionLibrary.RISCV
 
-    sensitive.to_csv("sensitive.csv")
-    non_sensitive.to_csv("non_sensitive.csv")
-    tmp.to_csv("encoded_intervals.csv")
+    core_trace_parser = CoreTraceParser(
+        ins_lib,
+        vulnerable_registers=[0, 3, 4],
+        ignore_unknown_instructions=True,
+        custom_line_parser=custom_line_parser,
+    )
+    result = core_trace_parser.parse("golden_trace.log")
 
-    _ = ""
-    # c_interval = (450000, 481430)
-    # sensitive = tmp[(tmp.index < c_interval[1]) & (tmp.index > c_interval[0])][4]
-    # instructions = df[(df["Cycle"] < c_interval[1]) & (df["Cycle"] > c_interval[0])][
-    #     ["Cycle", "Decoded instruction", "Register and memory contents"]
-    # ]
+    n = result.size
+    n_unique = (result.nunique() - 1).sum()
+    n_zero = (result == 0).sum().sum()
+
+    p1 = 100 * (n_unique / n)
+    p2 = 100 * (n_zero / n)
+    p3 = 100 * (1 - ((n_unique + n_zero) / n))
+
+    print(f"Unique injections represent: {p1:.2f}% of the space")
+    print(f"Zero injections represent: {p2:.2f}% of the space")
+    print(f"Toal reduction: {p3:.2f}%")
