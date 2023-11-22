@@ -17,6 +17,7 @@ class CoreTraceParser:
     trace_has_footer: bool = None
     n_registers: int = None
     vulnerable_registers: List[int] = None
+    cycle_offset: int = None
     ignore_unknown_instructions: bool = None
     custom_line_parser: callable = None
 
@@ -28,6 +29,7 @@ class CoreTraceParser:
         trace_has_footer: bool = True,
         n_registers: int = 32,
         vulnerable_registers: List[int] = [],
+        cycle_offset: int = -1,
         ignore_unknown_instructions: bool = False,
         custom_line_parser: callable = None,
     ) -> None:
@@ -35,6 +37,7 @@ class CoreTraceParser:
         self.trace_has_footer = trace_has_footer
         self.n_registers = n_registers
         self.vulnerable_registers = vulnerable_registers
+        self.cycle_offset = cycle_offset
         self.ignore_unknown_instructions = ignore_unknown_instructions
         self.custom_line_parser = custom_line_parser
 
@@ -68,39 +71,44 @@ class CoreTraceParser:
         start_cycle = decoded_lines[0].cycle
         end_cycle = decoded_lines[-1].cycle
 
-        unique_injection_interval_tracker = np.zeros(self.n_registers, dtype=int)
+        unique_injection_interval_tracker = np.ones(self.n_registers, dtype=int)
         override_tracker = np.zeros(self.n_registers).astype(bool)
-        result = np.zeros((end_cycle, self.n_registers), dtype=int) * np.nan
+        result = np.ones((end_cycle, self.n_registers), dtype=int)
 
         indexer = len(decoded_lines) - 1
-        read = list()
+        read = [Register(i) for i in range(self.n_registers)]
         override = list()
         for _i in tqdm(range(end_cycle), desc="Encoding inject intervals", leave=True):
             i = end_cycle - _i - 1
+            j = i + 1
 
-            if i + 1 == decoded_lines[indexer].cycle:
+            if j == decoded_lines[indexer].cycle:
                 read = reads[indexer]
                 override = overrides[indexer]
                 indexer -= 1
 
-            result[i][override_tracker] = 0
+            for o in override:
+                override_tracker[o.id] = True
 
             for r in read:
                 unique_injection_interval_tracker[r.id] += 1
                 override_tracker[r.id] = False
-            for o in override:
-                override_tracker[o.id] = True
 
-            result[i] = unique_injection_interval_tracker
+            result[i][override_tracker] = 0
+            result[i][~override_tracker] = unique_injection_interval_tracker[
+                ~override_tracker
+            ]
 
         for reg in self.vulnerable_registers:
             result[:, reg] = np.arange(1, end_cycle + 1)
 
-        result = result.astype(int)
-        result = result[start_cycle:]
+        result = result[start_cycle:end_cycle]
 
         columns = [f"x{i}" for i in range(self.n_registers)]
-        index = pd.Index(range(start_cycle, end_cycle), name="Cycle")
+        index = pd.Index(
+            range(start_cycle + self.cycle_offset, end_cycle + self.cycle_offset),
+            name="Cycle",
+        )
         result = pd.DataFrame(result, columns=columns, index=index)
 
         return result

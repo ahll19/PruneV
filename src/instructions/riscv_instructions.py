@@ -200,7 +200,10 @@ class SW(InstructionS):
 class ADDI(InstructionI):
     @staticmethod
     def overrides(rd: Register, rs1: Register, imm: int) -> List[Register]:
-        return [rd]
+        if rd != rs1:
+            return [rd]
+        else:
+            return []
 
     @staticmethod
     def reads(rd: Register, rs1: Register, imm: int) -> List[Register]:
