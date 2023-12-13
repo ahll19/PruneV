@@ -43,8 +43,19 @@ if __name__ == "__main__":
     p2 = n_non_zero_duplicates / n
     p3 = p1 + p2
 
+    n_sensitive = (result != 0).sum().sum()
+    n_non_sensitive = (result == 0).sum().sum()
+
     print(f"Zero injections represent: {100*p1:.2f}% of the space")
     print(f"Redundant injections represent: {100*p2:.2f}% of the space")
     print(f"Toal reduction: {100*p3:.2f}%")
+
+    print(f"n={n}")
+    print(f"n_0={n_zero}")
+    print(f"n_non_zero={n_non_zero_duplicates}")
+    print()
+
+    print(f"{100 * n_sensitive / n:.2f}% of the space is sensitive")
+    print(f"{100 * n_non_sensitive / n:.2f}% of the space is non-sensitive")
 
     result.to_csv("golden_trace_encoding.csv")

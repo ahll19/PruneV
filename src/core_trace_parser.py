@@ -78,6 +78,7 @@ class CoreTraceParser:
         indexer = len(decoded_lines) - 1
         read = [Register(i) for i in range(self.n_registers)]
         override = list()
+
         for _i in tqdm(range(end_cycle), desc="Encoding inject intervals", leave=True):
             i = end_cycle - _i - 1
             j = i + 1
@@ -93,6 +94,12 @@ class CoreTraceParser:
             for r in read:
                 unique_injection_interval_tracker[r.id] += 1
                 override_tracker[r.id] = False
+
+                try:
+                    if result[i + 1][r.id] == 0:
+                        result[i + 1][r.id] = unique_injection_interval_tracker[r.id]
+                except IndexError:
+                    pass
 
             result[i][override_tracker] = 0
             result[i][~override_tracker] = unique_injection_interval_tracker[
