@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Dict
 
 from ..register import Register
-from ..instructions.base_instructions import Instruction
 
 
 @dataclass(order=True, frozen=True)

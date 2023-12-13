@@ -51,7 +51,7 @@ class IbexLineDecoder(BaseLineDecoder):
                     rd, rs1, imm = memory_content.split(" ")[0].split(",")
                     rd = Register(int(rd[1:]))
                     rs1 = Register(int(rs1[1:]))
-                    imm = int(imm) if not "0x" in imm else int(imm, 16)
+                    imm = int(imm) if "0x" not in imm else int(imm, 16)
                     kwargs = {
                         "rd": rd,
                         "rs1": rs1,
@@ -62,7 +62,7 @@ class IbexLineDecoder(BaseLineDecoder):
                     rd, second = first.split(",")
                     rd = Register(int(rd[1:]))
                     imm, rs1 = second.split("(")
-                    imm = int(imm) if not "0x" in imm else int(imm, 16)
+                    imm = int(imm) if "0x" not in imm else int(imm, 16)
                     rs1 = Register(int(rs1[1:-1]))
                     kwargs = {
                         "rd": rd,
